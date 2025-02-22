@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Printier Web Server</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            min-height: 100vh;
+        }
+        .main-content {
+            min-width: 0;
+        }
+        .log-section {
+            min-width: 0;
+        }
+        h1 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        h2 {
+            margin-top: 30px;
+            margin-bottom: 15px;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+            overflow-x: auto;
+        }
+        .status {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .status.connected { background: #d4edda; }
+        .status.disconnected { background: #f8d7da; }
+        .status::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status.connected::before {
+            background: #28a745;
+            animation: blink 1s infinite;
+        }
+        .status.disconnected::before {
+            background: #dc3545;
+        }
+        .log {
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 4px;
+            margin-top: 0;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            color: #d4d4d4;
+            overflow-y: auto;
+            height: 800px;
+        }
+        .log p {
+            margin: 5px 0;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .log .timestamp {
+            color: #569cd6;
+        }
+        .log .direction {
+            color: #ce9178;
+            margin: 0 5px;
+        }
+        .log .success {
+            color: #4ec9b0;
+        }
+        .log .error {
+            color: #f44747;
+        }
+        .log .message {
+            color: #9cdcfe;
+        }
+        .log .data {
+            color: #dcdcaa;
+            margin-left: 15px;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+
+        .url-container {
+            position: relative;
+            display: block;
+        }
+        .url-container pre {
+            margin: 0;
+            padding-right: 100px;
+        }
+        .copy-btn {
+            position: absolute;
+            right: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            padding: 8px 15px;
+            background: #f8f9fa;
+            color: #495057;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            background: #e9ecef;
+            color: #212529;
+        }
+        .copy-btn:active {
+            transform: translateY(-50%) scale(0.98);
+        }
+
+        .test-form {
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            background: #f8f9fa;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            min-height: 120px;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            resize: vertical;
+        }
+
+        .send-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            margin-top: 5px;
+        }
+
+        .send-btn:hover {
+            background: #218838;
+        }
+
+        .send-btn:active {
+            transform: scale(0.98);
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="main-content">
+        <h1>Printer Server Status</h1>
+        <div id="status" class="status disconnected">Status: Disconnected</div>
+
+        <h2>Socket.io Connection</h2>
+        <p>The server is running and accepting Socket.io connections:</p>
+        <div class="url-container">
+            <pre><code id="wsUrl">http://localhost:8086/?api_key={{.APIKey}}</code></pre>
+            <button class="copy-btn" onclick="copyUrl()">Copy</button>
+        </div>
+
+        <h2>Message Format</h2>
+        <pre><code>{
+    "action": "print",
+    "printer_ip": "192.168.1.100",
+    "printer_port": "9100",
+    "data": "Raw printer data here"
+}</code></pre>
+
+        <h2>Test Print</h2>
+        <div class="test-form">
+            <div class="form-group">
+                <label for="printerIp">Printer IP Address</label>
+                <input type="text" id="printerIp" placeholder="e.g. 192.168.1.100">
+            </div>
+            <div class="form-group">
+                <label for="printerPort">Printer Port</label>
+                <input type="number" id="printerPort" placeholder="e.g. 9100">
+            </div>
+            <div class="form-group">
+                <label for="printerData">Print Data</label>
+                <textarea id="printerData" placeholder="Enter raw printer data here"></textarea>
+            </div>
+            <button class="send-btn" onclick="sendTestData()">Send Test Data</button>
+        </div>
+    </div>
+
+    <div class="log-section">
+        <h2>Connection Log</h2>
+        <div id="log" class="log"></div>
+    </div>
+</div>
+
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
+<script>
+    const apiKey = "{{.APIKey}}";
+    const log = document.getElementById('log');
+    const status = document.getElementById('status');
+    let socket = null;
+
+    function getTimestamp() {
+        const now = new Date();
+        return now.toLocaleTimeString('en-US', {
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            fractionalSecondDigits: 3
+        });
+    }
+
+    function addLogEntry(type, direction, message, data = null) {
+        const timestamp = getTimestamp();
+        let logEntry = `<p><span class="timestamp">[${timestamp}]</span>`;
+
+        if (direction) {
+            logEntry += `<span class="direction">${direction}</span>`;
+        }
+
+        logEntry += `<span class="${type}">${message}</span>`;
+
+        if (data) {
+            const formattedData = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
+            logEntry += `\n<span class="data">${formattedData}</span>`;
+        }
+
+        logEntry += '</p>';
+        log.innerHTML += logEntry;
+        log.scrollTop = log.scrollHeight;
+    }
+
+    function connect() {
+        if (socket) {
+            socket.disconnect();
+            socket = null;
+        }
+
+        socket = io('http://localhost:4000');
+
+        socket.on('connect', () => {
+            status.textContent = 'Status: Connected';
+            status.className = 'status connected';
+            addLogEntry('success', '→', 'Socket.IO connection established');
+        });
+
+        socket.on('disconnect', () => {
+            status.textContent = 'Status: Disconnected';
+            status.className = 'status disconnected';
+            addLogEntry('error', '←', 'Socket.IO connection closed');
+            setTimeout(connect, 3000);
+        });
+
+        socket.on('connect_error', (err) => {
+            addLogEntry('error', '!', 'Connection error:', err.message);
+        });
+
+        socket.on('message', (data) => {
+            const type = data.status === 'success' ? 'success' : 'error';
+            addLogEntry(type, '←', 'Server response:', data);
+        });
+    }
+
+    function copyUrl() {
+        const wsUrl = document.getElementById('wsUrl').textContent;
+        navigator.clipboard.writeText(wsUrl).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            btn.textContent = 'Copied!';
+            btn.style.backgroundColor = '#28a745';
+            btn.style.color = '#fff';
+            addLogEntry('success', '→', 'Socket.IO URL copied');
+            setTimeout(() => {
+                btn.textContent = 'Copy';
+                btn.style.backgroundColor = '#f8f9fa';
+                btn.style.color = '#495057';
+            }, 2000);
+        }).catch(err => {
+            addLogEntry('error', '!', 'Failed to copy URL:', err.message);
+            console.error('Copy failed:', err);
+        });
+    }
+
+    function sendTestData() {
+        if (!socket || !socket.connected) {
+            addLogEntry('error', '!', 'Socket.IO connection not ready');
+            return;
+        }
+
+        const data = {
+            action: 'print',
+            printer_ip: document.getElementById('printerIp').value,
+            printer_port: document.getElementById('printerPort').value,
+            data: document.getElementById('printerData').value
+        };
+
+        if (!data.printer_ip || !data.printer_port || !data.data) {
+            addLogEntry('error', '!', 'Please fill in all fields');
+            return;
+        }
+
+        socket.emit('print_request', data);
+        addLogEntry('success', '→', 'Test data sent:', data);
+    }
+
+    setTimeout(connect, 300);
+</script>
+</body>
+</html>
