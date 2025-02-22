@@ -16,7 +16,7 @@ const io = new Server(server, {
     cors: { origin: "*" }
 })
 
-const getAssetPath = (...paths) => {
+const getPath = (...paths) => {
     return app.isPackaged
         ? path.join(process.resourcesPath, ...paths)
         : path.join(__dirname, ...paths);
@@ -32,14 +32,15 @@ const createMainWindow = (show = true) => {
         skipTaskbar: true,
         maximizable: true,
         autoHideMenuBar: true,
-        icon: getAssetPath(trayIcon),
+        icon: getPath(trayIcon),
         title: 'Printier | Print Server',
         webPreferences: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            preload: getPath('preload.js')
         }
     })
 
-    mainWindow.loadFile(getAssetPath('resources/html/index.html'))
+    mainWindow.loadFile(getPath('resources/html/index.html'))
 
     mainWindow.on("close", (event) => {
         if (!isQuitting) {
@@ -66,7 +67,7 @@ app.whenReady().then(() => {
         if (BrowserWindow.getAllWindows().length === 0) createMainWindow(false)
     })
 
-    tray = new Tray(nativeImage.createFromPath(getAssetPath(trayIcon)))
+    tray = new Tray(nativeImage.createFromPath(getPath(trayIcon)))
     let contextMenu = Menu.buildFromTemplate([
         { label: 'Server: Running on ', type: 'normal', enabled: false },
         { label: '', type: 'separator'},
@@ -78,7 +79,7 @@ app.whenReady().then(() => {
             click: () => (
                 dialog.showMessageBox({
                     type: 'info',
-                    icon: getAssetPath(appIcon),
+                    icon: getPath(appIcon),
                     title: 'About',
                     message: 'Printier v1.0.0',
                     detail: 'A simple cross-platform WebSocket server that allows you to print to a network printer.\n\nAuthor: github.com/shitric'
@@ -122,7 +123,7 @@ app.whenReady().then(() => {
 
         dialog.showMessageBoxSync(mainWindow,{
             type: 'info',
-            icon: getAssetPath(appIcon),
+            icon: getPath(appIcon),
             title: 'Printier',
             message: 'Printier will now start on login',
             detail: "If you don't want to start on login, go to System Preferences or Task Manager and disable the Printier entry."
