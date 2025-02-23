@@ -10,7 +10,6 @@
   },
   "homepage": "https://github.com/shitric",
   "license": "MIT",
-  "asar": true,
   "devDependencies": {
     "@electron/fuses": "^1.8.0",
     "electron": "^34.2.0",
@@ -31,24 +30,29 @@
     "directories": {
       "output": "dist"
     },
+    "files": [
+      "**/*",
+      "public/**/*"
+    ],
     "compression": "maximum",
     "removePackageScripts": true,
     "win": {
       "target": "nsis",
-      "icon": "resources/icons/app/icon.ico"
+      "icon": "public/assets/images/app/icon.ico"
     },
     "mac": {
-      "target": [
-        "dmg"
-      ],
-      "icon": "resources/icons/app/icon.icns"
+      "target": {
+        "target": "dmg",
+        "arch": ["universal"]
+      },
+      "icon": "public/assets/images/app/icon.icns"
     },
     "linux": {
       "target": [
         "AppImage",
         "deb"
       ],
-      "icon": "resources/icons/app/icon.png"
+      "icon": "public/assets/images/app/icon.png"
     }
   }
 }

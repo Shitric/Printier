@@ -1,57 +1,93 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Printier Web Server</title>
+    <title>Printier Server</title>
     <style>
+        :root {
+            --primary-color: #2563eb;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+            --warning-color: #f59e0b;
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f1f5f9;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
+
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
+            background: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
             min-height: 100vh;
-            background: #f8f9fa;
+            display: flex;
+            flex-direction: column;
         }
+
         .container {
-            background: white;
-            padding: 40px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 40px;
-            min-height: 100vh;
+            max-width: 1000px;
+            width: 100%;
+            margin: 1rem auto;
+            padding: 0 1rem;
+            flex: 1;
         }
-        .main-content {
-            min-width: 0;
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 100%;
+            overflow: hidden;
         }
-        .log-section {
-            min-width: 0;
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
         }
-        h1 {
-            margin-top: 0;
-            margin-bottom: 20px;
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
         }
-        h2 {
-            margin-top: 30px;
-            margin-bottom: 15px;
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: var(--text-color);
+            margin: 0;
         }
-        pre {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 4px;
-            border: 1px solid #e9ecef;
-            overflow-x: auto;
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin: 0;
         }
+
         .status {
             display: inline-flex;
             align-items: center;
-            padding: 8px 12px;
-            border-radius: 4px;
-            margin: 10px 0;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
-        .status.connected { background: #d4edda; }
-        .status.disconnected { background: #f8d7da; }
+
         .status::before {
             content: '';
             display: inline-block;
@@ -59,289 +95,228 @@
             height: 8px;
             border-radius: 50%;
             margin-right: 8px;
+            animation: pulse 2s infinite;
         }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .status.connected {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+        }
+
         .status.connected::before {
-            background: #28a745;
-            animation: blink 1s infinite;
+            background: var(--success-color);
         }
+
+        .status.disconnected {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+        }
+
         .status.disconnected::before {
-            background: #dc3545;
+            background: var(--error-color);
         }
-        .log {
-            background: #1e1e1e;
-            padding: 20px;
-            border-radius: 4px;
-            margin-top: 0;
-            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-            font-size: 13px;
-            color: #d4d4d4;
-            overflow-y: auto;
-            height: 800px;
-        }
-        .log p {
-            margin: 5px 0;
-            line-height: 1.4;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-        .log .timestamp {
-            color: #569cd6;
-        }
-        .log .direction {
-            color: #ce9178;
-            margin: 0 5px;
-        }
-        .log .success {
-            color: #4ec9b0;
-        }
-        .log .error {
-            color: #f44747;
-        }
-        .log .message {
-            color: #9cdcfe;
-        }
-        .log .data {
-            color: #dcdcaa;
-            margin-left: 15px;
-        }
-        .success { color: #28a745; }
-        .error { color: #dc3545; }
 
-        .url-container {
+        .log-container {
             position: relative;
-            display: block;
-        }
-        .url-container pre {
-            margin: 0;
-            padding-right: 100px;
-        }
-        .copy-btn {
-            position: absolute;
-            right: 5px;
-            top: 50%;
-            transform: translateY(-50%);
-            padding: 8px 15px;
-            background: #f8f9fa;
-            color: #495057;
-            border: 1px solid #e9ecef;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-        }
-        .copy-btn:hover {
-            background: #e9ecef;
-            color: #212529;
-        }
-        .copy-btn:active {
-            transform: translateY(-50%) scale(0.98);
+            height: calc(100vh - 200px);
+            min-height: 400px;
+            width: 100%;
+            max-width: 100%;
         }
 
-        .test-form {
-            margin-top: 20px;
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
         }
 
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #495057;
+        .log-header h2 {
+            font-size: 1rem;
+            color: var(--text-color);
             font-weight: 500;
         }
 
-        .form-group input, .form-group textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            font-size: 14px;
-            background: #f8f9fa;
-        }
-
-        .form-group textarea {
-            width: 100%;
-            min-height: 120px;
+        .log {
+            background: var(--bg-color);
+            border-radius: 8px;
+            padding: 1rem;
             font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-            resize: vertical;
+            font-size: 0.8125rem;
+            line-height: 1.5;
+            height: calc(100% - 40px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 100%;
         }
 
-        .send-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s;
-            margin-top: 5px;
+        .log::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
         }
 
-        .send-btn:hover {
-            background: #218838;
+        .log::-webkit-scrollbar-track {
+            background: var(--card-bg);
         }
 
-        .send-btn:active {
-            transform: scale(0.98);
+        .log::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 3px;
         }
 
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .log::-webkit-scrollbar-thumb:hover {
+            background: var(--text-muted);
+        }
+
+        .log p {
+            margin: 0.25rem 0;
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.25rem 0;
+            min-width: min-content;
+            width: 100%;
+        }
+
+        .log .timestamp {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            min-width: 100px;
+            flex-shrink: 0;
+        }
+
+        .log .message {
+            color: var(--text-color);
+            word-break: break-word;
+            flex: 1;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+
+        .log .error {
+            color: var(--error-color);
+        }
+
+        .log .warning {
+            color: var(--warning-color);
+        }
+
+        .log .success {
+            color: var(--success-color);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 0.5rem auto;
+            }
+
+            .card {
+                padding: 1rem;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .log-container {
+                height: calc(100vh - 250px);
+            }
         }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="main-content">
-        <h1>Printer Server Status</h1>
-        <div id="status" class="status disconnected">Status: Disconnected</div>
+    <div class="container">
+        <div class="card">
+            <div class="header">
+                <div class="header-left">
+                    <h1>Printier Server</h1>
+                    <div id="status" class="status disconnected">Disconnected</div>
+                </div>
+            </div>
 
-        <h2>Socket.io Connection</h2>
-        <p>The server is running and accepting Socket.io connections:</p>
-        <div class="url-container">
-            <pre><code id="wsUrl">http://localhost:4000</code></pre>
-            <button class="copy-btn" onclick="copyUrl()">Copy</button>
-        </div>
-
-        <h2>Test Print</h2>
-        <div class="test-form">
-            <div class="form-group">
-                <label for="printerIp">Printer IP Address</label>
-                <input type="text" id="printerIp" placeholder="e.g. 192.168.1.100">
+            <div class="log-container">
+                <div class="log-header">
+                    <h2>Server Logs</h2>
+                </div>
+                <div id="log" class="log"></div>
             </div>
-            <div class="form-group">
-                <label for="printerPort">Printer Port</label>
-                <input type="number" id="printerPort" placeholder="e.g. 9100">
-            </div>
-            <div class="form-group">
-                <label for="printerData">Print Data</label>
-                <textarea id="printerData" placeholder="Enter raw printer data here"></textarea>
-            </div>
-            <button class="send-btn" onclick="sendTestData()">Send Test Data</button>
         </div>
     </div>
 
-    <div class="log-section">
-        <h2>Connection Log</h2>
-        <div id="log" class="log"></div>
-    </div>
-</div>
+    <script>
+        const logContainer = document.getElementById('log');
+        const status = document.getElementById('status');
 
-<script src="https://cdn.socket.io/4.8.1/socket.io.min.js" integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" crossorigin="anonymous"></script>
-<script>
-    const apiKey = "{{.APIKey}}";
-    const log = document.getElementById('log');
-    const status = document.getElementById('status');
-    let socket = null;
+        const { ipcRenderer } = require('electron');
 
-    function getTimestamp() {
-        const now = new Date();
-        return now.toLocaleTimeString('en-US', {
-            hour12: false,
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-            fractionalSecondDigits: 3
-        });
-    }
-
-    function addLogEntry(type, direction, message, data = null) {
-        const timestamp = getTimestamp();
-        let logEntry = `<p><span class="timestamp">[${timestamp}]</span>`;
-
-        if (direction) {
-            logEntry += `<span class="direction">${direction}</span>`;
-        }
-
-        logEntry += `<span class="${type}">${message}</span>`;
-
-        if (data) {
-            const formattedData = typeof data === 'object' ? JSON.stringify(data, null, 2) : data;
-            logEntry += `\n<span class="data">${formattedData}</span>`;
-        }
-
-        logEntry += '</p>';
-        log.innerHTML += logEntry;
-        log.scrollTop = log.scrollHeight;
-    }
-
-    function connect() {
-        if (socket) {
-            socket.disconnect();
-            socket = null;
-        }
-
-        socket = io('https://printier.software:4000');
-
-        socket.on('connect', () => {
-            status.textContent = 'Status: Connected';
-            status.className = 'status connected';
-            addLogEntry('success', '→', 'Socket.IO connection established');
-        });
-
-        socket.on('disconnect', () => {
-            status.textContent = 'Status: Disconnected';
-            status.className = 'status disconnected';
-            addLogEntry('error', '←', 'Socket.IO connection closed');
-            setTimeout(connect, 3000);
-        });
-
-        socket.on('connect_error', (err) => {
-            addLogEntry('error', '!', 'Connection error:', err.message);
-        });
-
-        socket.on('message', (data) => {
-            const type = data.status === 'success' ? 'success' : 'error';
-            addLogEntry(type, '←', 'Server response:', data);
-        });
-    }
-
-    function copyUrl() {
-        const wsUrl = document.getElementById('wsUrl').textContent;
-        navigator.clipboard.writeText(wsUrl).then(() => {
-            const btn = document.querySelector('.copy-btn');
-            btn.textContent = 'Copied!';
-            btn.style.backgroundColor = '#28a745';
-            btn.style.color = '#fff';
-            addLogEntry('success', '→', 'Socket.IO URL copied');
-            setTimeout(() => {
-                btn.textContent = 'Copy';
-                btn.style.backgroundColor = '#f8f9fa';
-                btn.style.color = '#495057';
-            }, 2000);
-        }).catch(err => {
-            addLogEntry('error', '!', 'Failed to copy URL:', err.message);
-            console.error('Copy failed:', err);
-        });
-    }
-
-    function sendTestData() {
-        if (!socket || !socket.connected) {
-            addLogEntry('error', '!', 'Socket.IO connection not ready');
-            return;
-        }
-
-        const data = {
-            action: 'print',
-            printer_ip: document.getElementById('printerIp').value,
-            printer_port: document.getElementById('printerPort').value,
-            data: document.getElementById('printerData').value
+        const LOG_TYPES = {
+            INFO: 'message',
+            ERROR: 'error',
+            WARNING: 'warning',
+            SUCCESS: 'success'
         };
 
-        if (!data.printer_ip || !data.printer_port || !data.data) {
-            addLogEntry('error', '!', 'Please fill in all fields');
-            return;
+        ipcRenderer.on('server-log', (event, data) => {
+            const { type = 'INFO', message } = typeof data === 'string' ? { message: data } : data;
+            addLogEntry(LOG_TYPES[type] || 'message', message);
+        });
+
+        ipcRenderer.on('server-error', (event, message) => {
+            addLogEntry('error', message);
+        });
+
+        ipcRenderer.on('server-status', (event, isConnected) => {
+            updateStatus(isConnected);
+        });
+
+        function getTimestamp() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+            return `${hours}:${minutes}:${seconds}.${milliseconds}`;
         }
 
-        socket.emit('print_request', data);
-        addLogEntry('success', '→', 'Test data sent:', data);
-    }
+        function addLogEntry(type, message) {
+            const logEntry = document.createElement('p');
+            
+            const timestamp = document.createElement('span');
+            timestamp.className = 'timestamp';
+            timestamp.textContent = `[${getTimestamp()}]`;
+            
+            const messageSpan = document.createElement('span');
+            messageSpan.className = type;
+            messageSpan.textContent = message;
+            
+            logEntry.appendChild(timestamp);
+            logEntry.appendChild(messageSpan);
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
 
-    setTimeout(connect, 300);
-</script>
+            // Keep only last 1000 log entries in DOM
+            while (logContainer.children.length > 1000) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+        }
+
+        function updateStatus(isConnected) {
+            status.textContent = isConnected ? 'Connected' : 'Disconnected';
+            status.className = `status ${isConnected ? 'connected' : 'disconnected'}`;
+        }
+
+        // Initial log entry
+        addLogEntry('message', 'Server interface initialized');
+    </script>
 </body>
 </html>

@@ -3,7 +3,6 @@ const { execSync, spawnSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
 const setConfig = require("../config").setConfig;
-const os = require("os");
 const { networkInterfaces } = require("os");
 
 function getLocalIpAddress() {
@@ -15,16 +14,13 @@ function getLocalIpAddress() {
             }
         }
     }
-    return "127.0.0.1"; // Fallback olarak localhost döndür
+    return "127.0.0.1";
 }
 
-const localIp = getLocalIpAddress();
-
-const installMkcertCommand = {
-    win32: "choco install mkcert -y",
-    darwin: "brew install mkcert",
-    linux: "sudo apt install mkcert -y || sudo yum install mkcert -y"
-}[process.platform];
+// Add handler for getting local IP
+ipcMain.handle('get-local-ip', () => {
+    return getLocalIpAddress();
+});
 
 ipcMain.handle("install-mkcert", async () => {
     const installMkcertCommand = {
