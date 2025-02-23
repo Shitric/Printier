@@ -345,25 +345,42 @@
                 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
                 try {
+                    // Install Mkcert
                     updateStatus("Installing Mkcert...", "info");
                     const mkcertResult = await window.electron.ipcRenderer.invoke("install-mkcert");
-                    updateStatus(mkcertResult, mkcertResult.includes('❌') ? 'error' : 'success');
+                    updateStatus(mkcertResult.message, mkcertResult.success ? 'success' : 'error');
+                    if (!mkcertResult.success) {
+                        startButton.disabled = false;
+                        return;
+                    }
                     await delay(2000);
 
+                    // Generate certificates
                     updateStatus("Generating certificates...", "info");
                     const certResult = await window.electron.ipcRenderer.invoke("generate-cert", { serverAddress, serverPort });
-                    updateStatus(certResult, certResult.includes('❌') ? 'error' : 'success');
+                    updateStatus(certResult.message, certResult.success ? 'success' : 'error');
+                    if (!certResult.success) {
+                        startButton.disabled = false;
+                        return;
+                    }
                     await delay(2000);
 
+                    // Update hosts file
                     updateStatus("Updating hosts file...", "info");
                     const hostsResult = await window.electron.ipcRenderer.invoke("update-hosts", { serverAddress });
-                    updateStatus(hostsResult, hostsResult.includes('❌') ? 'error' : 'success');
+                    updateStatus(hostsResult.message, hostsResult.success ? 'success' : 'error');
+                    if (!hostsResult.success) {
+                        startButton.disabled = false;
+                        return;
+                    }
                     await delay(2000);
 
-                    if (!hostsResult.includes('❌')) {
+                    // Complete setup
+                    const setupResult = await window.electron.ipcRenderer.invoke("complete-setup", { serverAddress, serverPort });
+                    if (setupResult.success) {
                         updateStatus("Setup completed successfully! Restarting...", "success");
-                        await window.electron.ipcRenderer.invoke("complete-setup", { serverAddress, serverPort });
                     } else {
+                        updateStatus(setupResult.message, "error");
                         startButton.disabled = false;
                     }
                 } catch (error) {

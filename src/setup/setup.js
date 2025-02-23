@@ -24,17 +24,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
         try {
-            updateStatus("🔄 Installing Mkcert...");
+            updateStatus("🔄 Installing dependencies...");
             await window.electron.ipcRenderer.invoke("install-mkcert");
-            await delay(2000);
+            await delay(100);
 
             updateStatus("🔄 Generating certificates...");
             await window.electron.ipcRenderer.invoke("generate-cert", { serverAddress, serverPort });
-            await delay(2000);
+            await delay(100);
 
-            updateStatus("🔄 Updating hosts file...");
+            updateStatus("🔄 Linking Printier domain to your local IP...");
             await window.electron.ipcRenderer.invoke("update-hosts", { serverAddress });
-            await delay(2000);
+            await delay(100);
 
             updateStatus("✅ Setup completed! Restarting...");
             await window.electron.ipcRenderer.invoke("complete-setup", { serverAddress, serverPort });

@@ -8,6 +8,7 @@
     "email": "furkan.byzyldz@gmail.com",
     "url": "https://furkan.kim/"
   },
+  "asar": false,
   "homepage": "https://github.com/shitric",
   "license": "MIT",
   "devDependencies": {
@@ -20,6 +21,7 @@
     "build": "electron-builder"
   },
   "dependencies": {
+    "@vscode/sudo-prompt": "^9.3.1",
     "electron-squirrel-startup": "^1.0.1",
     "socket.io": "^4.8.1",
     "uuid": "^11.1.0"
@@ -30,9 +32,14 @@
     "directories": {
       "output": "dist"
     },
-    "files": [
-      "**/*",
-      "public/**/*"
+    "extraResources": [
+      {
+        "from": "public",
+        "to": "public",
+        "filter": [
+          "**/*"
+        ]
+      }
     ],
     "compression": "maximum",
     "removePackageScripts": true,
@@ -40,10 +47,19 @@
       "target": "nsis",
       "icon": "public/assets/images/app/icon.ico"
     },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Printier"
+    },
     "mac": {
       "target": {
         "target": "dmg",
-        "arch": ["universal"]
+        "arch": [
+          "universal"
+        ]
       },
       "icon": "public/assets/images/app/icon.icns"
     },

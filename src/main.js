@@ -10,6 +10,13 @@ const {mainWindow} = require("./globals");
 const {getUserDataPath} = require("./helpers");
 const logger = require('./utils/logger');
 
+if (process.platform === 'win32') {
+    app.setAppUserModelId('com.shitric.printier');
+}
+
+// Global tray reference to prevent garbage collection
+let tray = null;
+
 const createMainWindow = (show = true) => {
     globals.mainWindow = new BrowserWindow({
         width: 1200,
@@ -21,15 +28,16 @@ const createMainWindow = (show = true) => {
         maximizable: true,
         autoHideMenuBar: true,
         icon: getAssetsPath(globals.appIcon),
-        title: 'Printier | Print Server',
+        title: 'Printier',
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            preload: getPath('preload.js')
+            preload: path.join(getPublicPath(), "scripts", "preload.js"),
         }
     })
 
     globals.mainWindow.loadFile(path.join(getPublicPath(), 'index.html'))
+    globals.mainWindow.setTitle('Printier')
 
     globals.mainWindow.on("close", (event) => {
         if (!globals.isQuitting) {
@@ -38,93 +46,68 @@ const createMainWindow = (show = true) => {
             logger.info(globals.mainWindow, 'Application minimized to system tray');
         }
     });
-
-    logger.info(globals.mainWindow, 'Initializing Printier Server...');
 }
 
 const createSetupWindow = () => {
     globals.setupWindow = new BrowserWindow({
-        width: 1200,
+        width: 800,
         height: 800,
         maximizable: false,
         autoHideMenuBar: true,
         resizable: true,
         show: true,
         icon: getAssetsPath(globals.appIcon),
-        title: 'Printier | Setup',
+        title: 'Printier Setup',
         webPreferences: {
             nodeIntegration: false,
             contextIsolation: true,
             enableRemoteModule: false,
-            preload: getPath('preload.js')
+            preload: path.join(getPublicPath(), "scripts", "preload.js")
         }
     })
 
     globals.setupWindow.loadFile(path.join(getPublicPath(), 'setup.html'))
-    globals.setupWindow.webContents.openDevTools()
+    globals.setupWindow.setTitle('Printier Setup')
     logger.info(globals.mainWindow, 'Setup window initialized');
 }
 
-app.setAppUserModelId('com.shitric.printier')
-
-app.whenReady().then(() => {
-    if (getConfig('installed') === false) {
-        logger.info(globals.mainWindow, 'First-time setup detected, launching installer...');
-        require('./setup/installer')
-        createSetupWindow()
-        return;
-    }
-
-    app.dock.hide()
-    logger.info(globals.mainWindow, 'Application dock hidden');
-
-    if (globals.loginItemSettings.wasOpenedAtLogin) {
-        logger.info(globals.mainWindow, 'Application started at login, running in background');
-        createMainWindow(false)
-    } else {
-        logger.info(globals.mainWindow, 'Application started manually');
-        createMainWindow(true)
-    }
-
-    app.on('activate', () => {
-        if (BrowserWindow.getAllWindows().length === 0) {
-            logger.info(globals.mainWindow, 'Restoring application window');
-            createMainWindow(false)
-        }
-    })
-
-    globals.tray = new Tray(nativeImage.createFromPath(getAssetsPath(globals.trayIcon)))
-    let contextMenu = Menu.buildFromTemplate([
+const createTray = () => {
+    const icon = getAssetsPath(globals.trayIcon);
+    tray = new Tray(nativeImage.createFromPath(icon));
+    
+    const contextMenu = Menu.buildFromTemplate([
         { label: 'Server: Running on ' + getConfig('appPort'), type: 'normal', enabled: false },
         { label: '', type: 'separator'},
-        { label: 'Open Server', type: 'normal', enabled: true, click: () => {
-            logger.info(globals.mainWindow, 'Server window opened from tray');
-            globals.mainWindow.show();
-        }},
+        { 
+            label: 'Open Server', 
+            type: 'normal', 
+            click: () => {
+                globals.mainWindow.show();
+                logger.info(globals.mainWindow, 'Server window opened from tray');
+            }
+        },
         {
             label: 'Reinstall Server',
             type: 'normal',
-            enabled: true,
             click: () => {
                 logger.warning(globals.mainWindow, 'Server reinstallation initiated');
-                dialog.showMessageBoxSync(mainWindow,{
+                dialog.showMessageBoxSync(globals.mainWindow, {
                     type: 'warning',
                     title: 'Warning',
                     message: 'Reinstalling Printier will remove all your current settings and start over.',
                     detail: 'Printier will now restart and reinstall.'
-                })
+                });
 
-                destroyConfig()
+                destroyConfig();
                 globals.isQuitting = true;
                 logger.info(globals.mainWindow, 'Configuration destroyed, restarting application');
-                app.relaunch()
-                app.quit()
+                app.relaunch();
+                app.quit();
             }
         },
         {
             label: 'About',
             type: 'normal',
-            enabled: true,
             click: () => {
                 logger.info(globals.mainWindow, 'About dialog opened');
                 dialog.showMessageBox({
@@ -133,7 +116,7 @@ app.whenReady().then(() => {
                     title: 'About',
                     message: 'Printier v1.0.0',
                     detail: 'A simple cross-platform WebSocket server that allows you to print to a network printer.\n\nAuthor: github.com/shitric'
-                })
+                });
             }
         },
         {
@@ -142,13 +125,55 @@ app.whenReady().then(() => {
             click: () => {
                 logger.info(globals.mainWindow, 'Application shutdown initiated');
                 globals.isQuitting = true;
-                app.quit()
+                app.quit();
             }
         }
-    ])
-    globals.tray.setToolTip('Printier')
-    globals.tray.setContextMenu(contextMenu)
+    ]);
+
+    tray.setToolTip('Printier');
+    tray.setContextMenu(contextMenu);
+
+    // Windows-specific: Show window on tray icon click
+    if (process.platform === 'win32') {
+        tray.on('click', () => {
+            globals.mainWindow.show();
+        });
+    }
+
     logger.info(globals.mainWindow, 'System tray icon and menu initialized');
+}
+
+app.whenReady().then(() => {
+    if (getConfig('installed') === false) {
+        logger.info(globals.mainWindow, 'First-time setup detected, launching installer...');
+        require('./setup/installer');
+        createSetupWindow();
+        return;
+    }
+
+    // Hide dock only on macOS
+    if (process.platform === 'darwin') {
+        app.dock.hide();
+        logger.info(globals.mainWindow, 'Application dock hidden');
+    }
+
+    if (globals.loginItemSettings.wasOpenedAtLogin) {
+        logger.info(globals.mainWindow, 'Application started at login, running in background');
+        createMainWindow(false);
+    } else {
+        logger.info(globals.mainWindow, 'Application started manually');
+        createMainWindow(true);
+    }
+
+    // Create tray after window
+    createTray();
+
+    app.on('activate', () => {
+        if (BrowserWindow.getAllWindows().length === 0) {
+            logger.info(globals.mainWindow, 'Restoring application window');
+            createMainWindow(false)
+        }
+    })
 
     if (globals.loginItemSettings.openAtLogin === false) {
         app.setLoginItemSettings({
@@ -166,6 +191,7 @@ app.whenReady().then(() => {
         })
     }
 
+    logger.info(globals.mainWindow, 'Initializing Printier Server...');
     const server = https.createServer({
         key: fs.readFileSync(path.join(getUserDataPath(), "certs", "printier.software-key.pem"), "utf8"),
         cert: fs.readFileSync(path.join(getUserDataPath(), "certs", "printier.software.pem"), "utf8")
@@ -230,8 +256,6 @@ app.on('window-all-closed', (event) => {
         return;
     }
 
-    if (process.platform !== 'darwin') {
-        logger.info(globals.mainWindow, 'Application shutdown complete');
-        app.quit()
-    }
+    logger.info(globals.mainWindow, 'Application shutdown complete');
+    app.quit()
 })
