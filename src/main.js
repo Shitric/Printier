@@ -1,10 +1,13 @@
 const {app, BrowserWindow, Tray, Menu, nativeImage, dialog} = require('electron')
-const { getAssetsPath, getPublicPath, getPath } = require('./helpers.js')
-const { getConfig } = require('./config.js')
+const { getAssetsPath, getPublicPath, getPath, isPortAvailable } = require('./helpers.js')
+const { getConfig, destroyConfig } = require('./config.js')
 const path = require('path')
 const globals = require('./globals.js')
-const http = require('http')
+const https = require('https')
+const fs = require('fs')
 const { Server } = require('socket.io')
+const {mainWindow} = require("./globals");
+const {getUserDataPath} = require("./helpers");
 
 const createMainWindow = (show = true) => {
     globals.mainWindow = new BrowserWindow({
@@ -36,26 +39,39 @@ const createMainWindow = (show = true) => {
 
 const createSetupWindow = () => {
     globals.setupWindow = new BrowserWindow({
-        width: 600,
-        height: 400,
+        width: 1200,
+        height: 800,
+        maximizable: false,
+        autoHideMenuBar: true,
+        resizable: true,
         show: true,
         icon: getAssetsPath(globals.appIcon),
         title: 'Printier | Setup',
         webPreferences: {
-            nodeIntegration: true,
+            nodeIntegration: false,
+            contextIsolation: true,
+            enableRemoteModule: false,
             preload: getPath('preload.js')
         }
     })
 
     globals.setupWindow.loadFile(path.join(getPublicPath(), 'setup.html'))
+    globals.setupWindow.webContents.openDevTools()
 }
 
 app.setAppUserModelId('com.shitric.printier')
 
 app.whenReady().then(() => {
+    if (getConfig('installed') === false) {
+        require('./setup/installer')
+        createSetupWindow()
+        return;
+    }
+
+    app.dock.hide()
+
     if (globals.loginItemSettings.wasOpenedAtLogin) {
         createMainWindow(false)
-        app.dock.hide()
     } else {
         createMainWindow(true)
     }
@@ -64,13 +80,29 @@ app.whenReady().then(() => {
         if (BrowserWindow.getAllWindows().length === 0) createMainWindow(false)
     })
 
-    console.log(getAssetsPath(globals.trayIcon))
-
     globals.tray = new Tray(nativeImage.createFromPath(getAssetsPath(globals.trayIcon)))
     let contextMenu = Menu.buildFromTemplate([
         { label: 'Server: Running on ' + getConfig('appPort'), type: 'normal', enabled: false },
         { label: '', type: 'separator'},
         { label: 'Open Server', type: 'normal', enabled: true, click: () => globals.mainWindow.show()},
+        {
+            label: 'Reinstall Server',
+            type: 'normal',
+            enabled: true,
+            click: () => {
+                dialog.showMessageBoxSync(mainWindow,{
+                    type: 'warning',
+                    title: 'Warning',
+                    message: 'Reinstalling Printier will remove all your current settings and start over.',
+                    detail: 'Printier will now restart and reinstall.'
+                })
+
+                destroyConfig()
+                globals.isQuitting = true;
+                app.relaunch()
+                app.quit()
+            }
+        },
         {
             label: 'About',
             type: 'normal',
@@ -112,8 +144,9 @@ app.whenReady().then(() => {
         })
     }
 
-    const server = http.createServer({
-
+    const server = https.createServer({
+        key: fs.readFileSync(path.join(getUserDataPath(), "certs", "printier.software-key.pem"), "utf8"),
+        cert: fs.readFileSync(path.join(getUserDataPath(), "certs", "printier.software.pem"), "utf8")
     },function (req, res) {
         res.writeHead(200, { 'Content-Type': 'text/plain' })
         res.end('Printier Server Running\n')
@@ -135,14 +168,13 @@ app.whenReady().then(() => {
         });
     })
 
-    server.listen(getConfig('appPort'),'0.0.0.0',() => {
+    server.listen(getConfig('appPort'), '0.0.0.0',() => {
         console.log('Server running on port' + getConfig('appPort'))
     })
-
 })
 
 app.on('window-all-closed', (event) => {
-    if (!globals.isQuitting) {
+    if (!globals.isQuitting && getConfig('installed') === true) {
         event.preventDefault();
         return;
     }

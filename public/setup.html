@@ -1,5 +1,5 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="tr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,13 +7,105 @@
 
     <script defer src="../src/setup/setup.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-        button { padding: 10px; margin-top: 10px; cursor: pointer; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            background: #fff;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin-bottom: 12px;
+        }
+
+        p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 16px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: #007bff;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            background: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        /* Durum mesajı için stil */
+        .status {
+            margin-top: 16px;
+            font-size: 14px;
+            color: #333;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            display: none; /* Başlangıçta gizli */
+        }
     </style>
 </head>
 <body>
-    <h1>Kurulum</h1>
-    <p id="status">Başlatılıyor...</p>
-    <button id="startSetup">Kurulumu Başlat</button>
+<div class="container">
+    <h1>Printier Setup</h1>
+    <p>
+        Enter the required information to configure the server.<br><br>
+        The setup will install necessary dependencies, generate SSL certificates,
+        and update the hosts file to ensure a secure and stable connection.
+    </p>
+    <div class="input-group">
+        <input type="text" id="serverAddress" placeholder="Server IP (e.g., 192.168.1.100">
+        <input type="text" id="serverPort" placeholder="Port Number (e.g., 4000)">
+    </div>
+    <button id="startSetup">Start Setup</button>
+
+    <div id="setupStatus" class="status"></div>
+</div>
 </body>
 </html>

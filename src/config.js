@@ -6,7 +6,7 @@ const { v4: uuidv4 } = require('uuid')
 const configPath = path.join(getUserDataPath(), "config.json");
 
 const defaultConfig = {
-    appServer: "http://printier.server",
+    appServer: "",
     appPort: 4000,
     apiKey: uuidv4(),
     autoStart: true,
@@ -45,4 +45,10 @@ function getConfig(key) {
     return key ? config[key] : config;
 }
 
-module.exports = { getConfig, setConfig };
+function destroyConfig() {
+    fs.unlinkSync(configPath);
+    saveConfig(defaultConfig);
+    return true;
+}
+
+module.exports = { getConfig, setConfig, destroyConfig };

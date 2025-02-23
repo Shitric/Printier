@@ -275,7 +275,7 @@
             socket = null;
         }
 
-        socket = io('http://localhost:4000');
+        socket = io('https://printier.software:4000');
 
         socket.on('connect', () => {
             status.textContent = 'Status: Connected';
