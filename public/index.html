@@ -32,23 +32,24 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 100%;
             width: 100%;
-            margin: 1rem auto;
-            padding: 0 1rem;
+            margin: 0;
+            padding: 0;
             flex: 1;
         }
 
         .card {
             background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            border-radius: 0;
+            box-shadow: none;
             padding: 1.5rem;
-            margin-bottom: 1rem;
-            border: 1px solid var(--border-color);
+            margin-bottom: 0;
+            border: none;
             width: 100%;
             max-width: 100%;
             overflow: hidden;
+            height: 100vh;
         }
 
         .header {
@@ -76,6 +77,28 @@
             color: var(--text-muted);
             font-size: 0.875rem;
             margin: 0;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .header-button {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .header-button:hover {
+            background: var(--border-color);
         }
 
         .status {
@@ -113,18 +136,18 @@
             background: var(--success-color);
         }
 
-        .status.disconnected {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--error-color);
+        .status.waiting {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-color);
         }
 
-        .status.disconnected::before {
-            background: var(--error-color);
+        .status.waiting::before {
+            background: var(--warning-color);
         }
 
         .log-container {
             position: relative;
-            height: calc(100vh - 200px);
+            height: calc(100vh - 120px);
             min-height: 400px;
             width: 100%;
             max-width: 100%;
@@ -212,6 +235,237 @@
             color: var(--success-color);
         }
 
+        .settings-button {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .settings-button:hover {
+            background: var(--border-color);
+        }
+
+        .settings-sidebar {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: var(--card-bg);
+            border-left: 1px solid var(--border-color);
+            padding: 1.5rem;
+            transition: right 0.3s ease;
+            z-index: 1001;
+            overflow-y: auto;
+        }
+
+        .logs-sidebar {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 80%;
+            height: 100vh;
+            background: var(--card-bg);
+            border-left: 1px solid var(--border-color);
+            padding: 1.5rem;
+            transition: right 0.3s ease;
+            z-index: 1001;
+        }
+
+        .logs-content {
+            height: calc(100vh - 130px);
+            overflow: hidden;
+        }
+
+        .log-history {
+            background: var(--bg-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.8125rem;
+            line-height: 1.5;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            border: 1px solid var(--border-color);
+            white-space: pre-wrap;
+            color: var(--text-color);
+        }
+
+        .backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .backdrop.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .settings-header h2 {
+            font-size: 1.25rem;
+            color: var(--text-color);
+            margin: 0;
+        }
+
+        .close-button {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .close-button:hover {
+            background: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .settings-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .settings-group label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .settings-group input {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-color);
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .settings-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .settings-group input:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .settings-group input[type="checkbox"] {
+            display: none;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+            margin: 0;
+        }
+
+        .toggle-switch .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--border-color);
+            transition: .3s;
+            border-radius: 24px;
+        }
+
+        .toggle-switch .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--text-color);
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input[type="checkbox"]:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input[type="checkbox"]:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        input[type="checkbox"]:disabled + .slider {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .toggle-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .toggle-label span {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        .save-button {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--primary-color);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1rem;
+        }
+
+        .save-button:hover {
+            background: #1d4ed8;
+        }
+
+        .save-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
         @media (max-width: 768px) {
             .container {
                 margin: 0.5rem auto;
@@ -230,6 +484,36 @@
             .log-container {
                 height: calc(100vh - 250px);
             }
+
+            .settings-sidebar {
+                width: 100%;
+                right: -100%;
+            }
+
+            .logs-sidebar {
+                width: 100%;
+            }
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .clear-button {
+            background: var(--error-color);
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .clear-button:hover {
+            background: #dc2626;
         }
     </style>
 </head>
@@ -239,7 +523,17 @@
             <div class="header">
                 <div class="header-left">
                     <h1>Printier Server</h1>
-                    <div id="status" class="status disconnected">Disconnected</div>
+                    <div id="status" class="status waiting">Waiting for connections</div>
+                </div>
+                <div class="header-right">
+                    <button id="logsButton" class="header-button">
+                        <svg height="16px" width="16px" version="1.1" id="_x32_" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 512 512" xml:space="preserve" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <style type="text/css"> .st0{fill:#ffffff;} </style> <g> <polygon class="st0" points="374.107,448.835 34.01,448.835 34.01,194.102 164.947,194.102 164.947,63.165 374.107,63.165 374.107,96.698 408.117,64.049 408.117,29.155 164.947,29.155 34.01,160.092 0,194.102 0,482.845 408.117,482.845 408.117,282.596 374.107,318.034 "></polygon> <path class="st0" d="M508.609,118.774l-51.325-51.325c-4.521-4.522-11.852-4.522-16.372,0L224.216,275.561 c-1.344,1.344-2.336,2.998-2.889,4.815l-26.21,86.117c-2.697,8.861,5.586,17.144,14.447,14.447l88.886-27.052l210.159-218.741 C513.13,130.626,513.13,123.295,508.609,118.774z M243.986,349.323l-16.877-18.447l11.698-38.447l29.139,15.678l15.682,29.145 L243.986,349.323z M476.036,110.577L291.414,296.372l-11.728-11.728l185.804-184.631l10.547,10.546 C476.036,110.567,476.036,110.571,476.036,110.577z"></path> </g> </g></svg>
+                        Log History
+                    </button>
+                    <button id="settingsButton" class="header-button">
+                        <svg fill="#FFFFFF" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 50" width="16px" height="16px"><path d="M 22.205078 2 A 1.0001 1.0001 0 0 0 21.21875 2.8378906 L 20.246094 8.7929688 C 19.076509 9.1331971 17.961243 9.5922728 16.910156 10.164062 L 11.996094 6.6542969 A 1.0001 1.0001 0 0 0 10.708984 6.7597656 L 6.8183594 10.646484 A 1.0001 1.0001 0 0 0 6.7070312 11.927734 L 10.164062 16.873047 C 9.583454 17.930271 9.1142098 19.051824 8.765625 20.232422 L 2.8359375 21.21875 A 1.0001 1.0001 0 0 0 2.0019531 22.205078 L 2.0019531 27.705078 A 1.0001 1.0001 0 0 0 2.8261719 28.691406 L 8.7597656 29.742188 C 9.1064607 30.920739 9.5727226 32.043065 10.154297 33.101562 L 6.6542969 37.998047 A 1.0001 1.0001 0 0 0 6.7597656 39.285156 L 10.648438 43.175781 A 1.0001 1.0001 0 0 0 11.927734 43.289062 L 16.882812 39.820312 C 17.936999 40.39548 19.054994 40.857928 20.228516 41.201172 L 21.21875 47.164062 A 1.0001 1.0001 0 0 0 22.205078 48 L 27.705078 48 A 1.0001 1.0001 0 0 0 28.691406 47.173828 L 29.751953 41.1875 C 30.920633 40.838997 32.033372 40.369697 33.082031 39.791016 L 38.070312 43.291016 A 1.0001 1.0001 0 0 0 39.351562 43.179688 L 43.240234 39.287109 A 1.0001 1.0001 0 0 0 43.34375 37.996094 L 39.787109 33.058594 C 40.355783 32.014958 40.813915 30.908875 41.154297 29.748047 L 47.171875 28.693359 A 1.0001 1.0001 0 0 0 47.998047 27.707031 L 47.998047 22.207031 A 1.0001 1.0001 0 0 0 47.160156 21.220703 L 41.152344 20.238281 C 40.80968 19.078827 40.350281 17.974723 39.78125 16.931641 L 43.289062 11.933594 A 1.0001 1.0001 0 0 0 43.177734 10.652344 L 39.287109 6.7636719 A 1.0001 1.0001 0 0 0 37.996094 6.6601562 L 33.072266 10.201172 C 32.023186 9.6248101 30.909713 9.1579916 29.738281 8.8125 L 28.691406 2.828125 A 1.0001 1.0001 0 0 0 27.705078 2 L 22.205078 2 z M 23.056641 4 L 26.865234 4 L 27.861328 9.6855469 A 1.0001 1.0001 0 0 0 28.603516 10.484375 C 30.066026 10.848832 31.439607 11.426549 32.693359 12.185547 A 1.0001 1.0001 0 0 0 33.794922 12.142578 L 38.474609 8.7792969 L 41.167969 11.472656 L 37.835938 16.220703 A 1.0001 1.0001 0 0 0 37.796875 17.310547 C 38.548366 18.561471 39.118333 19.926379 39.482422 21.380859 A 1.0001 1.0001 0 0 0 40.291016 22.125 L 45.998047 23.058594 L 45.998047 26.867188 L 40.279297 27.871094 A 1.0001 1.0001 0 0 0 39.482422 28.617188 C 39.122545 30.069817 38.552234 31.434687 37.800781 32.685547 A 1.0001 1.0001 0 0 0 37.845703 33.785156 L 41.224609 38.474609 L 38.53125 41.169922 L 33.791016 37.84375 A 1.0001 1.0001 0 0 0 32.697266 37.808594 C 31.44975 38.567585 30.074755 39.148028 28.617188 39.517578 A 1.0001 1.0001 0 0 0 27.876953 40.3125 L 26.867188 46 L 23.052734 46 L 22.111328 40.337891 A 1.0001 1.0001 0 0 0 21.365234 39.53125 C 19.90185 39.170557 18.522094 38.59371 17.259766 37.835938 A 1.0001 1.0001 0 0 0 16.171875 37.875 L 11.46875 41.169922 L 8.7734375 38.470703 L 12.097656 33.824219 A 1.0001 1.0001 0 0 0 12.138672 32.724609 C 11.372652 31.458855 10.793319 30.079213 10.427734 28.609375 A 1.0001 1.0001 0 0 0 9.6328125 27.867188 L 4.0019531 26.867188 L 4.0019531 23.052734 L 9.6289062 22.117188 A 1.0001 1.0001 0 0 0 10.435547 21.373047 C 10.804273 19.898143 11.383325 18.518729 12.146484 17.255859 A 1.0001 1.0001 0 0 0 12.111328 16.164062 L 8.8261719 11.46875 L 11.523438 8.7734375 L 16.185547 12.105469 A 1.0001 1.0001 0 0 0 17.28125 12.148438 C 18.536908 11.394293 19.919867 10.822081 21.384766 10.462891 A 1.0001 1.0001 0 0 0 22.132812 9.6523438 L 23.056641 4 z M 25 17 C 20.593567 17 17 20.593567 17 25 C 17 29.406433 20.593567 33 25 33 C 29.406433 33 33 29.406433 33 25 C 33 20.593567 29.406433 17 25 17 z M 25 19 C 28.325553 19 31 21.674447 31 25 C 31 28.325553 28.325553 31 25 31 C 21.674447 31 19 28.325553 19 25 C 19 21.674447 21.674447 19 25 19 z"/></svg>
+                        Settings
+                    </button>
                 </div>
             </div>
 
@@ -249,6 +543,64 @@
                 </div>
                 <div id="log" class="log"></div>
             </div>
+        </div>
+    </div>
+
+    <div id="backdrop" class="backdrop"></div>
+
+    <!-- Logs Sidebar -->
+    <div id="logsSidebar" class="logs-sidebar">
+        <div class="settings-header">
+            <h2>Log History</h2>
+            <div class="header-buttons">
+                <button id="clearLogs" class="clear-button">
+                    Clear Logs
+                </button>
+                <button id="closeLogs" class="close-button">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="logs-content">
+            <div id="logHistory" class="log-history"></div>
+        </div>
+    </div>
+
+    <!-- Settings Sidebar -->
+    <div id="settingsSidebar" class="settings-sidebar">
+        <div class="settings-header">
+            <h2>Settings</h2>
+            <button id="closeSettings" class="close-button">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+        </div>
+        <div class="settings-content">
+            <div class="settings-group">
+                <label for="appServer">Server Address</label>
+                <input type="text" id="appServer" name="appServer">
+            </div>
+            <div class="settings-group">
+                <label for="appPort">Port</label>
+                <input type="number" id="appPort" name="appPort" min="1024" max="65535">
+            </div>
+            <div class="settings-group">
+                <label for="apiKey">API Key</label>
+                <input type="text" id="apiKey" name="apiKey" readonly>
+            </div>
+            <div class="settings-group">
+                <div class="toggle-label">
+                    <span>Launch on system startup</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="autoStart" name="autoStart">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <button id="saveSettings" class="save-button">Save</button>
         </div>
     </div>
 
@@ -311,12 +663,167 @@
         }
 
         function updateStatus(isConnected) {
-            status.textContent = isConnected ? 'Connected' : 'Disconnected';
-            status.className = `status ${isConnected ? 'connected' : 'disconnected'}`;
+            status.textContent = isConnected ? 'Connected' : 'Waiting for connections';
+            status.className = `status ${isConnected ? 'connected' : 'waiting'}`;
+        }
+
+        // Settings Sidebar Management
+        const settingsButton = document.getElementById('settingsButton');
+        const settingsSidebar = document.getElementById('settingsSidebar');
+        const closeSettings = document.getElementById('closeSettings');
+        const saveSettings = document.getElementById('saveSettings');
+        const backdrop = document.getElementById('backdrop');
+
+        // Logs Sidebar Management
+        const logsButton = document.getElementById('logsButton');
+        const logsSidebar = document.getElementById('logsSidebar');
+        const closeLogs = document.getElementById('closeLogs');
+        const logHistory = document.getElementById('logHistory');
+
+        let activeSidebar = null;
+
+        async function loadLogHistory() {
+            try {
+                const logContent = await ipcRenderer.invoke('get-log-content');
+                logHistory.textContent = logContent;
+                logHistory.scrollTop = logHistory.scrollHeight;
+            } catch (error) {
+                addLogEntry('error', `Error loading log history: ${error.message}`);
+            }
+        }
+
+        function updateSidebarWidth() {
+            const width = window.innerWidth;
+            const sidebarWidth = width <= 768 ? '100%' : '80%';
+            logsSidebar.style.width = sidebarWidth;
+            logsSidebar.style.right = activeSidebar === logsSidebar ? '0' : `-${sidebarWidth}`;
+        }
+
+        function openSidebar(sidebar) {
+            if (activeSidebar) {
+                const isLogs = activeSidebar.id === 'logsSidebar';
+                if (isLogs) {
+                    activeSidebar.style.right = '-100%';
+                } else {
+                    activeSidebar.style.right = '-400px';
+                }
+            }
+            
+            const isLogs = sidebar.id === 'logsSidebar';
+            if (isLogs) {
+                updateSidebarWidth();
+            }
+            
+            sidebar.style.right = '0';
+            backdrop.classList.add('show');
+            activeSidebar = sidebar;
+        }
+
+        function closeSidebar() {
+            if (activeSidebar) {
+                const isLogs = activeSidebar.id === 'logsSidebar';
+                if (isLogs) {
+                    activeSidebar.style.right = '-100%';
+                } else {
+                    activeSidebar.style.right = '-400px';
+                }
+                activeSidebar = null;
+            }
+            backdrop.classList.remove('show');
+        }
+
+        function openLogsSidebar() {
+            openSidebar(logsSidebar);
+            loadLogHistory();
+        }
+
+        function openSettingsSidebar() {
+            openSidebar(settingsSidebar);
+            loadSettings();
+        }
+
+        // Event Listeners
+        logsButton.addEventListener('click', openLogsSidebar);
+        settingsButton.addEventListener('click', openSettingsSidebar);
+        closeLogs.addEventListener('click', closeSidebar);
+        closeSettings.addEventListener('click', closeSidebar);
+        backdrop.addEventListener('click', closeSidebar);
+        saveSettings.addEventListener('click', saveSettingsHandler);
+
+        // Clear Logs
+        const clearLogs = document.getElementById('clearLogs');
+        clearLogs.addEventListener('click', async () => {
+            try {
+                await ipcRenderer.invoke('clear-logs');
+                logHistory.textContent = '';
+                logContainer.innerHTML = '';
+                addLogEntry('success', 'All logs cleared');
+            } catch (error) {
+                addLogEntry('error', `Failed to clear logs: ${error.message}`);
+            }
+        });
+
+        // Close sidebar with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && backdrop.classList.contains('show')) {
+                closeSidebar();
+            }
+        });
+
+        // Load settings
+        async function loadSettings() {
+            try {
+                const settings = await ipcRenderer.invoke('get-config');
+                Object.entries(settings).forEach(([key, value]) => {
+                    const input = document.getElementById(key);
+                    if (input) {
+                        if (input.type === 'checkbox') {
+                            input.checked = value;
+                        } else {
+                            input.value = value;
+                        }
+                    }
+                });
+            } catch (error) {
+                addLogEntry('error', `Error loading settings: ${error.message}`);
+            }
+        }
+
+        // Save settings
+        async function saveSettingsHandler() {
+            try {
+                const settings = {};
+                document.querySelectorAll('.settings-group input').forEach(input => {
+                    if (input.type === 'checkbox') {
+                        settings[input.name] = input.checked;
+                    } else if (input.type === 'number') {
+                        settings[input.name] = parseInt(input.value);
+                    } else {
+                        settings[input.name] = input.value;
+                    }
+                });
+
+                const result = await ipcRenderer.invoke('save-config', settings);
+                if (result.success) {
+                    addLogEntry('success', 'Settings saved successfully');
+                    closeSidebar();
+                } else {
+                    addLogEntry('error', `Failed to save settings: ${result.error}`);
+                }
+            } catch (error) {
+                addLogEntry('error', `Error saving settings: ${error.message}`);
+            }
         }
 
         // Initial log entry
         addLogEntry('message', 'Server interface initialized');
+
+        // Pencere boyutu değiştiğinde sidebar genişliğini güncelle
+        window.addEventListener('resize', () => {
+            if (activeSidebar && activeSidebar.id === 'logsSidebar') {
+                updateSidebarWidth();
+            }
+        });
     </script>
 </body>
 </html>

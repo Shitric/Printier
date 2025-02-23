@@ -2,9 +2,9 @@
   "name": "printier",
   "version": "1.0.0",
   "description": "A simple cross-platform WebSocket server that allows you to print to a network printer.",
-  "main": "./src/main.js",
+  "main": "main.js",
   "author": {
-    "name": "Furkan Beyazyıldız",
+    "name": "Shitric",
     "email": "furkan.byzyldz@gmail.com",
     "url": "https://furkan.kim/"
   },
@@ -14,7 +14,8 @@
   "devDependencies": {
     "@electron/fuses": "^1.8.0",
     "electron": "^34.2.0",
-    "electron-builder": "^25.1.8"
+    "electron-builder": "^25.1.8",
+    "electron-reload": "^2.0.0-alpha.1"
   },
   "scripts": {
     "start": "electron .",
@@ -23,8 +24,8 @@
   "dependencies": {
     "@vscode/sudo-prompt": "^9.3.1",
     "electron-squirrel-startup": "^1.0.1",
-    "socket.io": "^4.8.1",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "ws": "^8.18.1"
   },
   "build": {
     "appId": "com.printier.electron",

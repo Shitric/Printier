@@ -2,7 +2,7 @@ const { app, ipcMain } = require("electron");
 const { execSync } = require("child_process");
 const fs = require("fs");
 const path = require("path");
-const setConfig = require("../config").setConfig;
+const config = require("../utils/config");
 const { networkInterfaces } = require("os");
 const sudo = require('@vscode/sudo-prompt');
 
@@ -153,7 +153,7 @@ ipcMain.handle("install-mkcert", async () => {
                 };
             }
         } else {
-            // Linux için paket yöneticisi kontrolü
+            // Check package manager for Linux
             let packageManager = null;
             try {
                 execSync('apt-get -v', { stdio: 'ignore' });
@@ -278,9 +278,9 @@ ipcMain.handle("update-hosts", async (_, { serverAddress }) => {
 
 ipcMain.handle("complete-setup", async (_, { serverAddress, serverPort }) => {
     try {
-        setConfig("installed", true);
-        setConfig("appServer", serverAddress);
-        setConfig("appPort", serverPort);
+        config.setConfig("installed", true);
+        config.setConfig("appServer", serverAddress);
+        config.setConfig("appPort", serverPort);
 
         setTimeout(() => {
             app.relaunch();
