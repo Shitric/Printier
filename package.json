@@ -2,7 +2,7 @@
   "name": "printier",
   "version": "1.0.0",
   "description": "A simple cross-platform WebSocket server that allows you to print to a network printer.",
-  "main": "main.js",
+  "main": "./src/main.js",
   "author": {
     "name": "Furkan Beyazyıldız",
     "email": "furkan.byzyldz@gmail.com",
@@ -10,6 +10,7 @@
   },
   "homepage": "https://github.com/shitric",
   "license": "MIT",
+  "asar": true,
   "devDependencies": {
     "@electron/fuses": "^1.8.0",
     "electron": "^34.2.0",
@@ -21,7 +22,8 @@
   },
   "dependencies": {
     "electron-squirrel-startup": "^1.0.1",
-    "socket.io": "^4.8.1"
+    "socket.io": "^4.8.1",
+    "uuid": "^11.1.0"
   },
   "build": {
     "appId": "com.printier.electron",
@@ -31,15 +33,6 @@
     },
     "compression": "maximum",
     "removePackageScripts": true,
-    "extraResources": [
-      {
-        "from": "resources",
-        "to": "resources",
-        "filter": [
-          "**/*"
-        ]
-      }
-    ],
     "win": {
       "target": "nsis",
       "icon": "resources/icons/app/icon.ico"

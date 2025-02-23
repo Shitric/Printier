@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <title>Printier Web Server</title>
     <style>
@@ -203,17 +203,9 @@
         <h2>Socket.io Connection</h2>
         <p>The server is running and accepting Socket.io connections:</p>
         <div class="url-container">
-            <pre><code id="wsUrl">http://localhost:8086/?api_key={{.APIKey}}</code></pre>
+            <pre><code id="wsUrl">http://localhost:4000</code></pre>
             <button class="copy-btn" onclick="copyUrl()">Copy</button>
         </div>
-
-        <h2>Message Format</h2>
-        <pre><code>{
-    "action": "print",
-    "printer_ip": "192.168.1.100",
-    "printer_port": "9100",
-    "data": "Raw printer data here"
-}</code></pre>
 
         <h2>Test Print</h2>
         <div class="test-form">
