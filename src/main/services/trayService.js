@@ -31,18 +31,55 @@ const createTray = () => {
             click: () => {
                 const mainWindow = globals.getMainWindow();
                 logger.warning(mainWindow, 'Server reinstallation requested by user');
-                dialog.showMessageBoxSync(mainWindow, {
+                
+                const choice = dialog.showMessageBoxSync(mainWindow, {
                     type: 'warning',
-                    title: 'Warning',
-                    message: 'Reinstalling Printier',
-                    detail: 'This will remove all your current settings and start over. Printier will now restart and reinstall.'
+                    buttons: ['Yes', 'No'],
+                    defaultId: 1,
+                    cancelId: 1,
+                    title: 'Confirm Reinstallation',
+                    message: 'Are you sure you want to reinstall Printier?',
+                    detail: 'This will remove all your current settings, logs, and start over. The application will restart after reinstallation.'
                 });
 
-                config.destroyConfig();
-                globals.setQuitting(true);
-                logger.info(mainWindow, 'Configuration reset, initiating application reinstall');
-                app.relaunch();
-                app.quit();
+                if (choice === 0) {
+                    dialog.showMessageBoxSync(mainWindow, {
+                        type: 'info',
+                        title: 'Reinstalling Printier',
+                        message: 'Preparing for reinstallation',
+                        detail: 'Your settings and logs will be reset and the application will restart.'
+                    });
+
+                    try {
+                        // Clear all logs
+                        logger.clearLogs();
+                        logger.info(mainWindow, 'All logs cleared successfully');
+                        
+                        // Delete old log files
+                        logger.deleteOldLogs();
+                        logger.info(mainWindow, 'Old log files deleted successfully');
+                        
+                        // Reset configuration
+                        config.destroyConfig();
+                        logger.info(mainWindow, 'Configuration reset successfully');
+                        
+                        // Set quitting flag and restart
+                        globals.setQuitting(true);
+                        logger.info(mainWindow, 'Configuration reset, initiating application reinstall');
+                        app.relaunch();
+                        app.quit();
+                    } catch (error) {
+                        logger.error(mainWindow, `Error during reinstallation: ${error.message}`);
+                        dialog.showMessageBoxSync(mainWindow, {
+                            type: 'error',
+                            title: 'Reinstallation Error',
+                            message: 'Failed to complete reinstallation',
+                            detail: `Error: ${error.message}`
+                        });
+                    }
+                } else {
+                    logger.info(mainWindow, 'Server reinstallation cancelled by user');
+                }
             }
         },
         {

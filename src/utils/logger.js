@@ -24,14 +24,33 @@ class Logger {
         this.maxLogs = 1000; // Keep last 1000 logs in memory
         this.logLevel = LOG_LEVELS.INFO; // Default log level
         this.maxFileSize = 5 * 1024 * 1024; // 5MB
-        this.maxFiles = 5; // Keep 5 rotated files
+        this.maxFiles = 30; // Keep 30 days of logs
         this.logDir = path.join(getUserDataPath(), 'logs');
-        this.logFile = path.join(this.logDir, 'printier.log');
+        this.currentDate = new Date().toISOString().split('T')[0];
+        this.logFile = this.getLogFilePath();
 
         // Create logs directory if it doesn't exist
         if (!fs.existsSync(this.logDir)) {
             fs.mkdirSync(this.logDir, { recursive: true });
         }
+    }
+
+    getLogFilePath() {
+        const date = new Date().toISOString().split('T')[0];
+        return path.join(this.logDir, `printier-${date}.log`);
+    }
+
+    checkAndRotateLogFile() {
+        const currentDate = new Date().toISOString().split('T')[0];
+        
+        // If date has changed, update logFile path
+        if (currentDate !== this.currentDate) {
+            this.currentDate = currentDate;
+            this.logFile = this.getLogFilePath();
+        }
+
+        // Delete logs older than maxFiles days
+        this.deleteOldLogs();
     }
 
     setLogLevel(level) {
@@ -45,30 +64,6 @@ class Logger {
         return typeLevel >= this.logLevel;
     }
 
-    rotateLogFile() {
-        if (!fs.existsSync(this.logFile)) {
-            return;
-        }
-
-        const stats = fs.statSync(this.logFile);
-        if (stats.size >= this.maxFileSize) {
-            // Rotate existing log files
-            for (let i = this.maxFiles - 1; i > 0; i--) {
-                const oldFile = `${this.logFile}.${i}`;
-                const newFile = `${this.logFile}.${i + 1}`;
-                if (fs.existsSync(oldFile)) {
-                    if (i === this.maxFiles - 1) {
-                        fs.unlinkSync(oldFile); // Delete oldest log file
-                    } else {
-                        fs.renameSync(oldFile, newFile);
-                    }
-                }
-            }
-            // Rename current log file
-            fs.renameSync(this.logFile, `${this.logFile}.1`);
-        }
-    }
-
     formatLogEntry(type, message) {
         const now = new Date();
         const timestamp = now.toISOString();
@@ -77,7 +72,7 @@ class Logger {
 
     writeToFile(type, message) {
         try {
-            this.rotateLogFile();
+            this.checkAndRotateLogFile();
             const logEntry = this.formatLogEntry(type, message);
             fs.appendFileSync(this.logFile, logEntry);
         } catch (error) {
@@ -152,35 +147,47 @@ class Logger {
     }
 
     getLogFiles() {
-        const files = [];
-        files.push(this.logFile);
-        for (let i = 1; i <= this.maxFiles; i++) {
-            const rotatedFile = `${this.logFile}.${i}`;
-            if (fs.existsSync(rotatedFile)) {
-                files.push(rotatedFile);
-            }
+        try {
+            const files = fs.readdirSync(this.logDir)
+                .filter(file => file.startsWith('printier-') && file.endsWith('.log'))
+                .map(file => path.join(this.logDir, file));
+            return files;
+        } catch (error) {
+            console.error('Failed to get log files:', error);
+            return [];
         }
-        return files;
     }
 
     clearLogs() {
         this.logs = [];
         try {
-            fs.writeFileSync(this.logFile, ''); // Clear current log file
+            const files = this.getLogFiles();
+            files.forEach(file => {
+                if (fs.existsSync(file)) {
+                    fs.unlinkSync(file);
+                }
+            });
         } catch (error) {
-            console.error('Failed to clear log file:', error);
+            console.error('Failed to clear logs:', error);
         }
     }
 
     deleteOldLogs() {
         try {
             const files = this.getLogFiles();
+            const now = new Date();
+            
             files.forEach(file => {
-                if (fs.existsSync(file)) {
-                    const stats = fs.statSync(file);
-                    const daysOld = (Date.now() - stats.mtime.getTime()) / (1000 * 60 * 60 * 24);
-                    if (daysOld > 30) { // Delete logs older than 30 days
+                const fileName = path.basename(file);
+                const dateMatch = fileName.match(/printier-(\d{4}-\d{2}-\d{2})\.log/);
+                
+                if (dateMatch) {
+                    const logDate = new Date(dateMatch[1]);
+                    const daysDiff = (now - logDate) / (1000 * 60 * 60 * 24);
+                    
+                    if (daysDiff > this.maxFiles) {
                         fs.unlinkSync(file);
+                        console.log(`Deleted old log file: ${fileName}`);
                     }
                 }
             });
@@ -192,8 +199,5 @@ class Logger {
 
 // Singleton instance
 const logger = new Logger();
-
-// Clean up old logs on startup
-logger.deleteOldLogs();
 
 module.exports = logger; 
