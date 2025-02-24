@@ -43,13 +43,6 @@ const createTray = () => {
                 });
 
                 if (choice === 0) {
-                    dialog.showMessageBoxSync(mainWindow, {
-                        type: 'info',
-                        title: 'Reinstalling Printier',
-                        message: 'Preparing for reinstallation',
-                        detail: 'Your settings and logs will be reset and the application will restart.'
-                    });
-
                     try {
                         // Clear all logs
                         logger.clearLogs();

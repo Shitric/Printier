@@ -284,7 +284,7 @@
                 const localIp = await window.electron.ipcRenderer.invoke('get-local-ip');
                 if (localIp && localIp !== '127.0.0.1') {
                     serverAddressInput.value = localIp;
-                    updateStatus('Local IP address detected and filled automatically.', 'info');
+                    updateStatus('Local IP address detected and filled automatically. Please double check the IP address before starting the setup.', 'info');
                 }
             } catch (error) {
                 console.error('Failed to get local IP:', error);

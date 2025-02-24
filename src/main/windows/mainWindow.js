@@ -1,6 +1,6 @@
-const { BrowserWindow } = require('electron');
+const { BrowserWindow, app } = require('electron');
 const path = require('path');
-const { getAssetsPath } = require('../../shared/helpers');
+const { getAssetsPath, getHtmlPath } = require('../../shared/helpers');
 const globals = require('../../shared/globals');
 const logger = require('../../utils/logger');
 
@@ -20,12 +20,14 @@ const createMainWindow = (show = true) => {
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
-            preload: path.join(__dirname, "../../../public/scripts/preload.js"),
+            preload: app.isPackaged 
+                ? path.join(process.resourcesPath, "public", "scripts", "preload.js")
+                : path.join(__dirname, "../../../public/scripts/preload.js")
         },
     });
 
     globals.setMainWindow(mainWindow);
-    mainWindow.loadFile(path.join(__dirname, "../../../public/index.html"));
+    mainWindow.loadFile(getHtmlPath('index.html'));
     mainWindow.setTitle('Printier');
     logger.info(null, 'Main window configuration and content loaded successfully');
 
